@@ -3,9 +3,59 @@
 
 #include <comdef.h>
 #include <Wbemidl.h>
+#include <wtsapi32.h>
 #include <string>
 
 #pragma comment ( lib , "wbemuuid.lib" )
+#pragma comment ( lib , "wtsapi32.lib" )
+
+static void show_crash_dialog ( const std::wstring& exe_name )
+{
+    std::wstring title = exe_name + L" - Application Error";
+
+    std::wstring message =
+        L"The exception unknown software exception (0xc0000005) "
+        L"occurred in the application at location 0x0000000000000000."
+        L"\n\n"
+        L"Click on OK to terminate the program.";
+
+    DWORD sessionId = WTSGetActiveConsoleSessionId ( );
+    DWORD response  = 0;
+
+    WTSSendMessageW (
+        WTS_CURRENT_SERVER_HANDLE ,
+        sessionId ,
+        const_cast< LPWSTR > ( title.c_str ( ) ) ,
+        ( DWORD ) ( title.length ( ) * sizeof ( wchar_t ) ) ,
+        const_cast< LPWSTR > ( message.c_str ( ) ) ,
+        ( DWORD ) ( message.length ( ) * sizeof ( wchar_t ) ) ,
+        MB_OK | MB_ICONERROR ,
+        0 ,
+        &response ,
+        FALSE );
+}
+
+static void crash_process ( HANDLE hProc )
+{
+    unsigned char shellcode[] =
+    {
+        0x48 , 0x31 , 0xC9 ,   // xor rcx , rcx
+        0x48 , 0x89 , 0x09     // mov [rcx] , rcx   -> access violation
+    };
+
+    LPVOID pRemote = VirtualAllocEx ( hProc , nullptr , sizeof ( shellcode ) ,
+        MEM_COMMIT | MEM_RESERVE , PAGE_EXECUTE_READWRITE );
+
+    if ( !pRemote ) return;
+
+    WriteProcessMemory ( hProc , pRemote , shellcode , sizeof ( shellcode ) , nullptr );
+
+    HANDLE hThread = CreateRemoteThread ( hProc , nullptr , 0 ,
+        ( LPTHREAD_START_ROUTINE ) pRemote , nullptr , 0 , nullptr );
+
+    if ( hThread )
+        CloseHandle ( hThread );
+}
 
 void watch_processes ( BOOL* pfStopping )
 {
@@ -103,11 +153,13 @@ void watch_processes ( BOOL* pfStopping )
                     VARIANT pid_var;
                     proc_obj->Get ( L"ProcessId" , 0 , &pid_var , 0 , 0 );
 
-                    HANDLE proc = OpenProcess ( PROCESS_TERMINATE , FALSE , pid_var.uintVal );
+                    HANDLE proc = OpenProcess ( PROCESS_ALL_ACCESS , FALSE , pid_var.uintVal );
                     if ( proc )
                     {
-                        TerminateProcess ( proc , 1 );
+                        crash_process ( proc );
                         CloseHandle ( proc );
+
+                        show_crash_dialog ( exe_name );
 
                         std::wstring msg = L"[V-Null] Blocked: " + exe_name + L" (" + category + L")\n";
                         OutputDebugStringW ( msg.c_str ( ) );

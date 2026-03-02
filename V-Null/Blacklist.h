@@ -16,7 +16,7 @@ inline std::vector<BlacklistEntry> get_blacklist ( )
     return
     {
         { L"notepad.exe"  , L"Example"  , MatchMode::Exact  },
-        { L"calc.exe"     , L"Example"  , MatchMode::Exact  },
+        { L"calc"         , L"calc"     , MatchMode::Exact  },
         { L"Ocean-"       , L"Ocean"    , MatchMode::Prefix },
         { L"Echo-"        , L"Echo"     , MatchMode::Prefix },
     };
