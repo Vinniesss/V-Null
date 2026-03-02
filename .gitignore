@@ -1,0 +1,45 @@
+## --- Visual Studio ---
+# User-specific files (Window positions, breakpoints, etc.)
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build Results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Oo]bj/
+out/
+
+# Visual Studio Solution File newer format
+.library/
+
+## --- C++ Specific ---
+# Precompiled Header Cache
+*.pch
+*.ipch
+
+# Intermediate Files
+*.obj
+*.sbr
+*.tlog
+*.lastbuildstate
+*.idb
+*.pdb
+*.ilk
+*.exp
+*.res
+
+## --- Git / OS ---
+# System files
+.DS_Store
+Thumbs.db
+
+# Ignore local environment settings
+.env

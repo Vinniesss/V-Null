@@ -1,0 +1,12 @@
+#pragma once
+#define SERVICE_NAME L"V-Null"
+
+#define SERVICE_DISPLAY_NAME L"V-Null Service"
+
+#define SERVICE_START_TYPE SERVICE_AUTO_START
+
+#define SERVICE_DEPENDENCIES L""
+
+#define SERVICE_ACCOUNT NULL
+
+#define SERVICE_PASSWORD NULL
