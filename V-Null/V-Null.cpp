@@ -1,6 +1,8 @@
 #include <iostream>
 #include <conio.h>
 #include <Windows.h>
+#include <string>
+#include <vector>
 #include "ServiceConfig.h"
 #include "ServiceBase.h"
 #include "ServiceInstaller.h"
@@ -45,9 +47,17 @@ int wmain ( int argc , wchar_t* argv[] )
     {
         if ( _wcsicmp ( L"install" , argv[1] + 1 ) == 0 )
         {
+            std::wstring svc_name = GenerateServiceName ( );
+
+            if ( !SaveServiceName ( svc_name ) )
+            {
+                wprintf ( L"Failed to save service identity to registry.\n" );
+                return 1;
+            }
+
             InstallService (
-                SERVICE_NAME ,
-                SERVICE_DISPLAY_NAME ,
+                svc_name.c_str ( ) ,
+                svc_name.c_str ( ) ,
                 SERVICE_START_TYPE ,
                 SERVICE_DEPENDENCIES ,
                 SERVICE_ACCOUNT ,
@@ -56,7 +66,13 @@ int wmain ( int argc , wchar_t* argv[] )
         }
         else if ( _wcsicmp ( L"remove" , argv[1] + 1 ) == 0 )
         {
-            UninstallService ( SERVICE_NAME );
+            std::wstring svc_name = LoadServiceName ( );
+            if ( svc_name.empty ( ) )
+            {
+                wprintf ( L"No installed service found.\n" );
+                return 1;
+            }
+            UninstallService ( svc_name.c_str ( ) );
         }
         else if ( _wcsicmp ( L"splash" , argv[1] + 1 ) == 0 )
         {
@@ -65,7 +81,17 @@ int wmain ( int argc , wchar_t* argv[] )
     }
     else
     {
-        CVNullService service ( const_cast<PWSTR> ( SERVICE_NAME ) );
+        std::wstring svc_name = LoadServiceName ( );
+        if ( svc_name.empty ( ) )
+        {
+            wprintf ( L"No service identity found in registry.\n" );
+            return 1;
+        }
+
+        std::vector< wchar_t > name_buf ( svc_name.begin ( ) , svc_name.end ( ) );
+        name_buf.push_back ( L'\0' );
+
+        CVNullService service ( name_buf.data ( ) );
 
         if ( !CServiceBase::Run ( service ) )
         {
