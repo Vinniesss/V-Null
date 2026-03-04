@@ -24,8 +24,9 @@ V-Null is a native Windows service that silently monitors process creation event
 - 💥 **Stealth Termination** — Injects minimal shellcode to trigger a genuine access violation, avoiding the typical `TerminateProcess` fingerprint
 - 🪟 **Native Error Dialog** — Displays a Windows-style "Application Error" message box via `WTSSendMessage`, making the block look like a natural crash
 - 📋 **Flexible Blacklist** — Supports exact name matching and prefix matching for broader coverage
-- 🚀 **Runs as a Service** — Starts automatically with Windows, operates silently in the background
-- 🎨 **Splash Screen** — Displays a styled console banner on the user's desktop when the service starts
+- 🚀 **Runs as a Service** — Starts automatically with Windows, operating completely silently with no event logs
+- 👻 **Stealthy Installation** — Installs using a randomized, legitimate-sounding service name (e.g., `WinDefenderSync`) hidden in `ProgramData` to evade detection
+- 🎨 **Splash Screen** — Displays a styled console banner on the user's desktop when the executable is launched manually
 
 ## How It Works
 
@@ -85,9 +86,11 @@ Run the built executable from an **Administrator** command prompt:
 V-Null.exe -install
 ```
 
-The service will be registered as **V-Null Service** and configured to start automatically with Windows.
+The executable will copy itself to `C:\ProgramData\Microsoft\DeviceSync` and register a service using a randomly selected, legitimate-sounding name (e.g., `WinDefenderSync`, `NvStreamMgr`). Its identity is saved in the registry for clean removal. It is configured to start automatically with Windows and operate in complete silence.
 
 ### Remove the Service
+
+To cleanly uninstall the service and remove the copied executable, simply run:
 
 ```sh
 V-Null.exe -remove
@@ -113,7 +116,7 @@ inline std::vector<BlacklistEntry> get_blacklist ( )
 | Match Mode | Behavior | Example |
 |---|---|---|
 | `Exact` | Matches the full process name (case-insensitive) | `malware.exe` matches only `malware.exe` |
-| `Prefix` | Matches any process starting with the string | `Ocean-` matches `Ocean-Client.exe`, `Ocean-Loader.exe`, etc. |
+| `Prefix` | Matches any process starting with the string | `Echo-` matches `Echo-Client.exe`, `Echo-Loader.exe`, etc. |
 
 > [!NOTE]
 > Changes to the blacklist require a rebuild and service reinstallation.
@@ -127,8 +130,8 @@ V-Null/
 ├── ProcessWatcher.cpp/.h   # WMI monitoring + process termination
 ├── Blacklist.h             # Configurable blocked process list
 ├── ServiceBase.cpp/.h      # Generic Windows service base class
-├── ServiceInstaller.cpp/.h # Service registration/unregistration
-└── ServiceConfig.h         # Service name and startup config
+├── ServiceInstaller.cpp/.h # Randomized stealth service registration/unregistration
+└── ServiceConfig.h         # Base service configuration
 ```
 
 ## Requirements
