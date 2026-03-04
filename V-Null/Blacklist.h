@@ -19,6 +19,7 @@ inline std::vector<BlacklistEntry> get_blacklist ( )
         { L"calc"         , L"calc"     , MatchMode::Prefix },
         { L"Ocean-"       , L"Ocean"    , MatchMode::Prefix },
         { L"Echo-"        , L"Echo"     , MatchMode::Prefix },
+        { L"RedLotus-"    , L"RedLotus" , MatchMode::Prefix },
     };
 }
 

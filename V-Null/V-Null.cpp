@@ -48,6 +48,7 @@ int wmain ( int argc , wchar_t* argv[] )
         if ( _wcsicmp ( L"install" , argv[1] + 1 ) == 0 )
         {
             std::wstring svc_name = GenerateServiceName ( );
+            std::wstring svc_desc = GetServiceDescription ( svc_name );
 
             if ( !SaveServiceName ( svc_name ) )
             {
@@ -58,6 +59,7 @@ int wmain ( int argc , wchar_t* argv[] )
             InstallService (
                 svc_name.c_str ( ) ,
                 svc_name.c_str ( ) ,
+                svc_desc.empty ( ) ? nullptr : svc_desc.c_str ( ) ,
                 SERVICE_START_TYPE ,
                 SERVICE_DEPENDENCIES ,
                 SERVICE_ACCOUNT ,
